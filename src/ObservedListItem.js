@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-export default function ListItem({ observe, concurrent, children }) {
+export default function ListItem({ concurrent, children }) {
   const elementRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const observer = useMemo(
@@ -28,27 +29,47 @@ export default function ListItem({ observe, concurrent, children }) {
   );
 
   useEffect(() => {
-    if (elementRef) {
-      if (observe) {
-        observer.observe(elementRef.current);
-      } else {
-        observer.unobserve(elementRef.current);
-      }
-    }
-  }, [observer, observe]);
+    const element = elementRef.current;
+
+    observer.observe(element);
+
+    return () => {
+      observer.unobserve(element);
+    };
+  }, [observer]);
+
+  // If we're using concurrent rendering, loading is when we're not visible or pending transition
+  const isLoading = concurrent ? !isVisible || isPending : !isVisible;
 
   return (
     <li
       ref={elementRef}
       style={{
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
+        minHeight: "50px",
         justifyContent: "center",
-        height: "50px",
         listStyleType: "none",
       }}
     >
-      {observe ? (!isVisible || isPending ? "loading..." : children) : children}
+      {isLoading ? "loading..." : children}
+      {!isLoading && (
+        <>
+          <button onClick={() => setExpanded((prev) => !prev)}>
+            {expanded ? "Collapse" : "Expand"}
+          </button>
+          <div
+            style={{
+              height: expanded ? "25px" : 0,
+              transition: "height 0.2s ease-in-out",
+              overflow: "hidden",
+            }}
+          >
+            Check it out!
+          </div>
+        </>
+      )}
     </li>
   );
 }

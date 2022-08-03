@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import ListItem from "./ListItem";
+import ObservedListItem from "./ObservedListItem";
+import RegularListItem from "./RegularListItem";
 import "./App.css";
 
 export default function App() {
-  const [numberOfItems, setNumberOfItems] = useState(10000);
+  const [numberOfItems, setNumberOfItems] = useState(5000);
   const [observe, setObserve] = useState(false);
   const [concurrent, setConcurrent] = useState(false);
 
@@ -47,11 +48,17 @@ export default function App() {
           style={{ height: "300px", overflow: "auto", border: "1px solid black" }}
         >
           <ul style={{ margin: 0, padding: 0 }}>
-            {[...Array(numberOfItems)].map((_, index) => (
-              <ListItem key={`item-${index}`} observe={observe} concurrent={concurrent}>{`Item ${
-                index + 1
-              }`}</ListItem>
-            ))}
+            {[...Array(numberOfItems)].map((_, index) =>
+              observe ? (
+                <ObservedListItem key={`observed-item-${index}`} concurrent={concurrent}>{`Item ${
+                  index + 1
+                }`}</ObservedListItem>
+              ) : (
+                <RegularListItem key={`regular-item-${index}`}>
+                  {`Item ${index + 1}`}
+                </RegularListItem>
+              )
+            )}
           </ul>
         </div>
       </div>
